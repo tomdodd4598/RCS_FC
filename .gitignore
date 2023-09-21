@@ -1,2 +1,27 @@
-/doi_10.5061_dryad.k6t1rj8__v11/*
-/Circuit/*
+# eclipse
+bin/
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
+
+# gradle
+build/
+.gradle
+
+# other
+eclipse/
+*.suo
+/.vs
+
+doi_10.5061_dryad.k6t1rj8__v11/
+Circuit/
+Paper/

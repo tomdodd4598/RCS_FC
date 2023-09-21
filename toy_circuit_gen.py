@@ -12,23 +12,13 @@ def generate_bit_strings(n, p):
     event_occurs = rand_array < p
 
     # Where an event occurs, generate a new bit (0 or 1)
-    bit_strings[event_occurs] = np.random.randint(
-        2, size=np.count_nonzero(event_occurs))
+    bit_strings[event_occurs] = np.random.randint(2, size=np.count_nonzero(event_occurs))
 
     # Convert the bit strings to strings
     bit_strings = np.array([''.join(row.astype(str)) for row in bit_strings])
 
     return bit_strings
 
-
-p = 0.5
-bit_strings = generate_bit_strings(12, p=0.5)
-
-# Open the file in write mode ('w')
-with open(f'Toy Circuit\\OriganToy\\{p}.txt', 'w') as f:
-    # Write each bit string on a new line
-    for bit_string in bit_strings:
-        f.write(bit_string + '\n')
 
 def process_bit_strings(bit_strings, x):
     # Initialize a list to hold the processed bit strings
@@ -53,10 +43,26 @@ def process_bit_strings(bit_strings, x):
 
     return processed_bit_strings
 
-processed_bit_strings = process_bit_strings(bit_strings, 0.3)
 
-# Open the file in write mode ('w')
-with open(f'Toy Circuit\\ADToy\\{p}.txt', 'w') as f:
-    # Write each processed bit string on a new line
-    for bit_string in processed_bit_strings:
-        f.write(bit_string + '\n')
+def write_bit_strings(file_name, bit_strings):
+    # Open the file in write mode ('w')
+    with open(file_name, 'w') as f:
+        # Write each bit string on a new line
+        for bit_string in bit_strings:
+            f.write(f'{bit_string}\n')
+
+
+def main():
+    p = 0.5
+    bit_strings = generate_bit_strings(12, p)
+
+    write_bit_strings(f'Toy Circuit\\OriganToy\\{p}.txt', bit_strings)
+
+    x = 0.3
+    processed_bit_strings = process_bit_strings(bit_strings, x)
+
+    write_bit_strings(f'Toy Circuit\\ADToy\\{p}.txt', processed_bit_strings)
+
+
+if __name__ == '__main__':
+    main()
