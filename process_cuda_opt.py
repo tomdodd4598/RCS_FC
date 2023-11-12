@@ -1,30 +1,35 @@
-import math
-from tqdm import tqdm
 import cupy as cp
+import math
+
+from tqdm import tqdm
 
 
-def int_to_bin_list(s):
+# Convert int to list of bits
+def int_to_bits(s):
     return list(map(int, str((bin(s)))[2:]))
 
 
+# Convert binary string to int
 def bin_to_int(a):
     return int(a, 2)
 
 
-def calculate_order_averages(order, n, m, bin_order, s_bar_list, data):
-    s_bar = s_bar_list[order]
+def calculate_order_averages(order, n, m, bin_orders, order_sublists, data):
+    s_bar_list = order_sublists[order]
     result: list = [0 for _ in range(len(data))]
+
     index = 0
     for file_list in data:
-        for s_num in range(len(s_bar)):
-            s = s_bar[s_num]
-            temp = cp.bitwise_and(s, file_list)
+        for s_num in range(len(s_bar_list)):
+            s_bar = s_bar_list[s_num]
+            temp = cp.bitwise_and(s_bar, file_list)
 
-            def bin_o(x):
-                return bin_order[x]
+            def bin_order(x):
+                return bin_orders[x]
 
-            temp = (-1) ** bin_o(temp)
+            temp = (-1) ** bin_order(temp)
             result[index] = result[index] + int(cp.sum(temp)) ** 2
+
         index = index + 1
 
     for i in range(len(result)):
@@ -44,22 +49,22 @@ def read_files(filenames):
 
 
 def main():
-    n = 14
+    n = 16
     # n = int(sys.argv[1])
     full_circuit = True
     m = 500000
     # d = 10
     s_length = 2 ** n
-    bin_order = cp.array([
-        int(sum(int_to_bin_list(i)))
+    bin_orders = cp.array([
+        int(sum(int_to_bits(i)))
         for i in tqdm(range(0, s_length), desc='Initializing Step 1', leave=False)
     ])
 
-    s_bar_list = [[] for _ in range(0, n + 1)]
+    order_sublists = [[] for _ in range(0, n + 1)]
 
     for i in tqdm(range(0, s_length), desc='Initializing Step 2', leave=False):
-        s_bar_list[sum(int_to_bin_list(i))].append(i)
-    s_bar_list = [cp.array(i) for i in s_bar_list]
+        order_sublists[sum(int_to_bits(i))].append(i)
+    order_sublists = [cp.array(order_sublist) for order_sublist in order_sublists]
 
     # z = cp.array([0 for _ in range(n + 1)])
     # z_list = []
@@ -70,19 +75,19 @@ def main():
         filenames = [f'Patch Circuit\\n{n}\\measurements_patch_n{n}_m14_s1{i}_e18_pEFGH.txt' for i in range(10)]
     result_list = [1]
     average_list = [1]
-    for i in range(1, n + 1):
+    for k in range(1, n + 1):
+        print(f'k={k}')
         data = read_files(filenames)
-        result = calculate_order_averages(i, n, m, bin_order, s_bar_list, data)
+        result = calculate_order_averages(k, n, m, bin_orders, order_sublists, data)
         result_list.append(result)
         average = sum(result) / len(result)
         average_list.append(average)
         # print(average_list)
-        slope = abs(
-            round(math.log(average_list[i - 1]) - math.log(average_list[i]), 5))
+        slope = abs(round(math.log(average_list[k - 1]) - math.log(average_list[k]), 5))
 
-        print(slope)
+        # print(slope)
         if slope < 0.001:
-            average_list = average_list + [[average] for _ in range(i, n + 1)]
+            average_list = average_list + [[average] for _ in range(k, n + 1)]
             break
     print(average_list)
 
